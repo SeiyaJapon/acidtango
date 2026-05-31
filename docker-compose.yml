@@ -1,0 +1,28 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: product-sorter-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: product-sorter-app
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGO_URI: mongodb://mongo:27017/product_sorter
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:

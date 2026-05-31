@@ -1,0 +1,48 @@
+package com.acidtangoinditex.productsorter.products.domain.product.valueObjects;
+
+import com.acidtangoinditex.productsorter.products.domain.product.Product;
+import com.acidtangoinditex.productsorter.products.domain.product.ProductMother;
+import org.junit.jupiter.api.Test;
+
+import java.util.EnumMap;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class ProductTest {
+
+    @Test
+    void exposes_its_attributes() {
+        Product product = ProductMother.vNeckBasicShirt();
+        assertThat(product.id()).isEqualTo(ProductId.of(1));
+        assertThat(product.name()).isEqualTo(ProductName.of("V-NECH BASIC SHIRT"));
+        assertThat(product.salesUnits()).isEqualTo(SalesUnits.of(100));
+        assertThat(product.stockBySize().at(Size.S)).isEqualTo(StockUnits.of(4));
+        assertThat(product.stockBySize().at(Size.M)).isEqualTo(StockUnits.of(9));
+        assertThat(product.stockBySize().at(Size.L)).isEqualTo(StockUnits.of(0));
+    }
+
+    @Test
+    void equality_is_driven_by_id() {
+        Product first = ProductMother.product(7, "FIRST", 1, 1, 1, 1);
+        Product second = ProductMother.product(7, "SECOND", 999, 0, 0, 0);
+        assertThat(first).isEqualTo(second);
+        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+    }
+
+    @Test
+    void rejects_null_fields() {
+        Map<Size, StockUnits> stock = new EnumMap<>(Size.class);
+        stock.put(Size.S, StockUnits.of(1));
+        StockBySize stockBySize = StockBySize.from(stock);
+        assertThatThrownBy(() -> Product.create(null, ProductName.of("x"), SalesUnits.of(0), stockBySize))
+                .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Product.create(ProductId.of(1), null, SalesUnits.of(0), stockBySize))
+                .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Product.create(ProductId.of(1), ProductName.of("x"), null, stockBySize))
+                .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Product.create(ProductId.of(1), ProductName.of("x"), SalesUnits.of(0), null))
+                .isInstanceOf(NullPointerException.class);
+    }
+}

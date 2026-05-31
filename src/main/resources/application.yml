@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: product-sorter
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/product_sorter}
+      auto-index-creation: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    org.mongodb.driver: WARN
+    org.springframework.data.mongodb: INFO

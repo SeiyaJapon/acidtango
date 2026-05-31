@@ -1,0 +1,38 @@
+package com.acidtangoinditex.productsorter.products.domain.product.sorting;
+
+import com.acidtangoinditex.productsorter.products.domain.product.ProductMother;
+import com.acidtangoinditex.productsorter.products.domain.product.Product;
+import com.acidtangoinditex.productsorter.products.domain.product.interfaces.ScorerInterface;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class StockRatioCriterionTest {
+
+    private final StockRatioCriterion criterion = new StockRatioCriterion();
+
+    @Test
+    void exposes_its_identifier() {
+        assertThat(criterion.id()).isEqualTo(SortingCriterionId.STOCK_RATIO);
+    }
+
+    @Test
+    void score_matches_the_product_availability_ratio() {
+        Product fullyStocked = ProductMother.product(1, "ALL", 0, 1, 1, 1);
+        Product partiallyStocked = ProductMother.product(2, "PART", 0, 1, 0, 1);
+        Product onlyOneSize = ProductMother.product(3, "ONE", 0, 0, 1, 0);
+        Product outOfStock = ProductMother.product(4, "NONE", 0, 0, 0, 0);
+
+        ScorerInterface scorer = criterion.prepareFor(List.of(fullyStocked, partiallyStocked, onlyOneSize, outOfStock));
+
+        assertThat(scorer.score(fullyStocked).value()).isEqualByComparingTo(BigDecimal.ONE);
+        assertThat(scorer.score(partiallyStocked).value())
+                .isEqualByComparingTo(new BigDecimal("0.6666666666666667"));
+        assertThat(scorer.score(onlyOneSize).value())
+                .isEqualByComparingTo(new BigDecimal("0.3333333333333333"));
+        assertThat(scorer.score(outOfStock).value()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+}

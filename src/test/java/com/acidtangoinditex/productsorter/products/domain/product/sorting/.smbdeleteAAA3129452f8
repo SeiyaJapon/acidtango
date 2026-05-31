@@ -1,0 +1,40 @@
+package com.acidtangoinditex.productsorter.products.domain.product.sorting;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class SortingCriteriaCatalogTest {
+
+    @Test
+    void indexes_criteria_by_their_identifier() {
+        SortingCriterionInterface sales = new SalesUnitsCriterion();
+        SortingCriterionInterface stock = new StockRatioCriterion();
+        SortingCriteriaCatalog catalog = new SortingCriteriaCatalog(List.of(sales, stock));
+
+        assertThat(catalog.find(SortingCriterionId.SALES_UNITS)).contains(sales);
+        assertThat(catalog.find(SortingCriterionId.STOCK_RATIO)).contains(stock);
+        assertThat(catalog.find(SortingCriterionId.of("unknown"))).isEmpty();
+    }
+
+    @Test
+    void rejects_duplicate_criteria_with_the_same_id() {
+        SortingCriterionInterface first = new SalesUnitsCriterion();
+        SortingCriterionInterface second = new SalesUnitsCriterion();
+        assertThatThrownBy(() -> new SortingCriteriaCatalog(List.of(first, second)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("duplicate sorting criterion");
+    }
+
+    @Test
+    void exposes_all_registered_criteria() {
+        SortingCriterionInterface sales = new SalesUnitsCriterion();
+        SortingCriterionInterface stock = new StockRatioCriterion();
+        SortingCriteriaCatalog catalog = new SortingCriteriaCatalog(List.of(sales, stock));
+
+        assertThat(catalog.all()).containsExactly(sales, stock);
+    }
+}
